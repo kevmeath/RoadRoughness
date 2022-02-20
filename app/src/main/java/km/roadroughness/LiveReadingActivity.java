@@ -34,7 +34,7 @@ public class LiveReadingActivity extends AppCompatActivity implements SensorEven
 
     private LineChart chart;
 
-    private float[] accelData;
+    private float[] accelData = {0,0,0};
     private float[] rotData;
 
     @Override
@@ -122,21 +122,35 @@ public class LiveReadingActivity extends AppCompatActivity implements SensorEven
         return set;
     }
 
+    private float[] accelDataFiltered = {0,0,0};
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            accelData = event.values;
+            final float alpha = 0.8f;  // Low-pass filter constant
+
+            // Low-pass filter
+            accelData[0] = alpha * accelData[0] + (1 - alpha) * event.values[0];
+            accelData[1] = alpha * accelData[1] + (1 - alpha) * event.values[1];
+            accelData[2] = alpha * accelData[2] + (1 - alpha) * event.values[2];
+
+            // High-pass filter
+            accelDataFiltered[0] = event.values[0] - accelData[0];
+            accelDataFiltered[1] = event.values[1] - accelData[1];
+            accelDataFiltered[2] = event.values[2] - accelData[2];
+
         }
         else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             rotData = event.values;
         }
 
-        if (accelData != null && rotData != null) {
+        float vertAccel;
+
+        if (accelDataFiltered != null && rotData != null) {
             float[] rotMatrix = new float[9];
             SensorManager.getRotationMatrixFromVector(rotMatrix, rotData);
             float[] rotTrans = RRMath.transposeMatrix(rotMatrix);
-            float[] worldAccel = RRMath.multiplyMatrix(accelData, rotTrans);
-            float vertAccel = worldAccel[2] - 9.81f;  // Subtract acceleration due to gravity
+            float[] worldAccel = RRMath.multiplyMatrix(accelDataFiltered, rotTrans);
+            vertAccel = worldAccel[2];
             addEntry(vertAccel, getString(R.string.data_vertAccel));
         }
     }
