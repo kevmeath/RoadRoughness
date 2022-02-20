@@ -26,4 +26,12 @@ public class RRMath {
 
         return multiplied;
     }
+
+    public static float calcVelocity(float velocity, float acceleration, float time) {
+        return velocity + (acceleration * time);
+    }
+
+    public static float calcDistance(float velocity, float acceleration, float time) {
+        return (velocity * time) + 0.5f * acceleration * (time * time);
+    }
 }
