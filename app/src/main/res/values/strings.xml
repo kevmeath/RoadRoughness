@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">RoadRoughness</string>
+
+    <!-- Buttons -->
+    <string name="button_liveReading">Live Reading</string>
+    <string name="button_recordRoute">Record Route</string>
+    <string name="button_viewMap">View Map</string>
+
+    <!-- Chart -->
+    <string name="data_vertAccel">Vertical Acceleration</string>
+</resources>
