@@ -45,7 +45,7 @@ public class LiveReadingActivity extends AppCompatActivity implements SensorEven
 
         // Get sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         rotation = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
         // Register sensor listeners
@@ -125,7 +125,7 @@ public class LiveReadingActivity extends AppCompatActivity implements SensorEven
     private float[] accelDataFiltered = {0,0,0};
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             final float alpha = 0.8f;  // Low-pass filter constant
 
             // Low-pass filter
