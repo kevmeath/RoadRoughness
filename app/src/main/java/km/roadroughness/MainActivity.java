@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user taps the Record Route button */
     public void recordRoute(View view) {
         // Start record route activity
+        Intent intent = new Intent(this, RecordRouteActivity.class);
+        startActivity(intent);
     }
     /** Called when the user taps the View Map button */
     public void viewMap(View view) {

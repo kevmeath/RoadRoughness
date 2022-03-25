@@ -8,4 +8,5 @@
 
     <!-- Chart -->
     <string name="data_vertAccel">Vertical Acceleration</string>
+    <string name="title_activity_record_route">RecordRouteActivity</string>
 </resources>
