@@ -1,12 +1,26 @@
 <resources>
     <string name="app_name">RoadRoughness</string>
 
+<!--
+    Main Activity
+-->
     <!-- Buttons -->
     <string name="button_liveReading">Live Reading</string>
     <string name="button_recordRoute">Record Route</string>
     <string name="button_viewMap">View Map</string>
 
+<!--
+    Live Reading Activity
+-->
     <!-- Chart -->
     <string name="data_vertAccel">Vertical Acceleration</string>
     <string name="title_activity_record_route">RecordRouteActivity</string>
+
+<!--
+    Record Route Activity
+-->
+    <!-- Buttons -->
+    <string name="toggleButton_start">Start</string>
+    <string name="toggleButton_stop">Stop</string>
+
 </resources>
