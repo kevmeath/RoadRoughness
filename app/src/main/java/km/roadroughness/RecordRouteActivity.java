@@ -4,9 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.room.Room;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -17,6 +20,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -29,11 +33,15 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 
 import km.roadroughness.databinding.ActivityRecordRouteBinding;
+import km.roadroughness.db.AppDatabase;
+import km.roadroughness.db.Route;
+import km.roadroughness.db.RouteDAO;
 import km.roadroughness.util.RRMath;
 
 public class RecordRouteActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
@@ -70,15 +78,18 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
                         // Reset verticalDistance
                         verticalDistance = 0;
                     }
+                    else {
+                        routeRoughness.add(0F);
+                    }
 
                     // Add location to a list.
                     route.add(location);
-                    updateMap(new LatLng(location.getLatitude(), location.getLongitude()));
+                    updateMap(new LatLng(location.getLatitude(), location.getLongitude()), routeRoughness.get(routeRoughness.size() - 1));
                 }
             }
         }
     };
-    private final int REQUEST_CODE_ALL_LOCATION = 1;
+    private final int REQUEST_CODE_LOCATION = 1;
     private boolean locationPermissionGranted;
 
     private float currentSpeed = 0;
@@ -161,9 +172,33 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         sensorManager.unregisterListener(this, accelerometer);
         sensorManager.unregisterListener(this, rotation);
+        saveRoute();
+    }
 
-        Log.d("Route", route.toString());
-        Log.d("Roughness", routeRoughness.toString());
+    private void saveRoute() {
+        EditText routeName = new EditText(this);
+        new AlertDialog.Builder(this).setTitle("Save Route").setView(routeName)
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "saved-routes").build();
+                        RouteDAO routeDAO = db.routeDAO();
+
+                        String name = routeName.getText().toString();
+                        if (name.isEmpty()) name = String.valueOf(System.currentTimeMillis()/1000);
+
+                        routeDAO.insertRoute(new Route(name, (Location[]) route.toArray(), (Float[]) routeRoughness.toArray()));
+
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .show();
     }
 
     /**
@@ -212,10 +247,18 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
         }
     }
 
-    private void updateMap(LatLng point) {
+    private void updateMap(LatLng point, float roughness) {
         // Add a line connecting to the next point on the route
         polylineOptions.add(point);
         mMap.addPolyline(polylineOptions);
+
+        // Add marker indicating roughness
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.title(String.valueOf(roughness));
+        markerOptions.icon(null);
+        markerOptions.position(point);
+        mMap.addMarker(markerOptions);
+
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
     }
 
@@ -226,7 +269,7 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
             locationPermissionGranted = true;
         }
         else {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_ALL_LOCATION);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION);
         }
     }
 
@@ -236,7 +279,7 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         locationPermissionGranted = false;
-        if (requestCode == REQUEST_CODE_ALL_LOCATION) {
+        if (requestCode == REQUEST_CODE_LOCATION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationPermissionGranted = true;
             }
