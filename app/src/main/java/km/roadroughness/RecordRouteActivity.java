@@ -49,6 +49,7 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
     // Map
     private GoogleMap mMap;
     private ActivityRecordRouteBinding binding;
+    private Route route;
     private PolylineOptions polylineOptions = new PolylineOptions();
 
     // Location
@@ -62,29 +63,29 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
                 // Don't record data when stopped.
                 currentSpeed = location.getSpeed();
                 if (currentSpeed > 0) {
-
                     // If there is at least 1 location recorded, calculate roughness from the last
                     // location to the current location.
-                    if (route.size() > 0) {
+                    if (route.getLocations() != null) {
 
                         // Get distance travelled since the last location
-                        float distance = location.distanceTo(route.get(route.size() - 1));
+                        float distance = location.distanceTo(lastLocation);
 
                         // Calculate roughness vertical distance travelled in meters per horizontal
                         // distance travelled in kilometers. Add result to a list.
                         float roughness = verticalDistance / (distance / 1000F);
-                        routeRoughness.add(roughness);
+                        route.addRoughness(roughness);
 
                         // Reset verticalDistance
                         verticalDistance = 0;
                     }
                     else {
-                        routeRoughness.add(0F);
+                        route.addRoughness(0);
                     }
 
                     // Add location to a list.
-                    route.add(location);
-                    updateMap(new LatLng(location.getLatitude(), location.getLongitude()), routeRoughness.get(routeRoughness.size() - 1));
+                    lastLocation = location;
+                    route.addLocation(new double[] {location.getLatitude(), location.getLongitude()});
+                    updateMap(new LatLng(location.getLatitude(), location.getLongitude()));
                 }
             }
         }
@@ -110,8 +111,7 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
     private float velocity = 0;
 
     // Route
-    private ArrayList<Location> route = new ArrayList<>();
-    private ArrayList<Float> routeRoughness = new ArrayList<>();
+    private Location lastLocation;
 
 
     @Override
@@ -154,6 +154,7 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
      * Called when the start button is pressed.
      */
     private void start() {
+        route = new Route();
         setupSensorListener();
 
         if (locationPermissionGranted) {
@@ -181,13 +182,14 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
                 .setPositiveButton("Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "saved-routes").build();
+                        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "saved-routes").allowMainThreadQueries().build();
                         RouteDAO routeDAO = db.routeDAO();
 
                         String name = routeName.getText().toString();
                         if (name.isEmpty()) name = String.valueOf(System.currentTimeMillis()/1000);
+                        route.setName(name);
 
-                        routeDAO.insertRoute(new Route(name, (Location[]) route.toArray(), (Float[]) routeRoughness.toArray()));
+                        routeDAO.insertRoute(route);
 
                         dialogInterface.dismiss();
                     }
@@ -247,18 +249,10 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
         }
     }
 
-    private void updateMap(LatLng point, float roughness) {
+    private void updateMap(LatLng point) {
         // Add a line connecting to the next point on the route
         polylineOptions.add(point);
         mMap.addPolyline(polylineOptions);
-
-        // Add marker indicating roughness
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.title(String.valueOf(roughness));
-        markerOptions.icon(null);
-        markerOptions.position(point);
-        mMap.addMarker(markerOptions);
-
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
     }
 
