@@ -4,7 +4,6 @@
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <application
@@ -15,13 +14,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RoadRoughness">
 
-        <!--
-            MAPS_API_KEY defined in local.properties
-        -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
+        <activity
+            android:name=".ViewMapActivity"
+            android:exported="false"
+            android:label="@string/title_activity_view_map" />
         <activity
             android:name=".RecordRouteActivity"
             android:exported="false"

@@ -23,4 +23,10 @@
     <string name="toggleButton_start">Start</string>
     <string name="toggleButton_stop">Stop</string>
 
+<!--
+    View Map Activity
+-->
+    <string name="dialog_select_route">Select a route</string>
+    <string name="title_activity_view_map">ViewMapActivity</string>
+
 </resources>

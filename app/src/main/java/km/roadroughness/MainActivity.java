@@ -30,5 +30,7 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user taps the View Map button */
     public void viewMap(View view) {
         // Start view map activity
+        Intent intent = new Intent(this, ViewMapActivity.class);
+        startActivity(intent);
     }
 }
