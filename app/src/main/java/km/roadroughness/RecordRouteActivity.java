@@ -228,7 +228,7 @@ public class RecordRouteActivity extends FragmentActivity implements OnMapReadyC
         // Make a location updates request
         if (locationPermissionGranted) {
             LocationRequest locationRequest = LocationRequest.create();
-            locationRequest.setInterval(10000);
+            locationRequest.setInterval(5000);
             locationRequest.setFastestInterval(5000);
             locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
