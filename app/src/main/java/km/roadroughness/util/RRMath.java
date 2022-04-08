@@ -1,8 +1,6 @@
 package km.roadroughness.util;
 
 public class RRMath {
-    private RRMath(){};
-
     /**
      * @param matrix A 3x3 matrix in the form of a 9 element array
      * @return Transposed matrix
