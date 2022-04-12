@@ -98,10 +98,15 @@ public class ViewMapActivity extends FragmentActivity implements OnMapReadyCallb
         }
     }
 
+    /**
+     * Gets a colour on a scale between green and red based on a value between 0 and 1
+     * @param percentage float between 0 and 1
+     * @return ARGB integer
+     */
     private int getColourScale(float percentage) {
         int A = 255;
-        int R = percentage >= 0.5 ? 255 : (int) percentage * 255;
-        int G = percentage <= 0.5 ? 255 : (int) (1 - percentage) * 255;
+        int R = percentage >= 0.5 ? 255 : (int) (percentage * 255);
+        int G = percentage <= 0.5 ? 255 : (int) ((1 - percentage) * 255);
         int B = 0;
         return (A & 0xff) << 24 | (R & 0xff) << 16 | (G & 0xff) << 8 | B;
     }
